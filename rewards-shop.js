@@ -73,11 +73,8 @@
   const labels={ru:"Магазин",kz:"Дүкен",en:"Shop"};
   ["ru","kz","en"].forEach(lang=>{if(L[lang]&&L[lang].nav)L[lang].nav.shop=labels[lang];});
   if(!TABS.some(x=>x.id==="shop"))TABS.push({id:"shop",icon:"fa-store"});
-  const originalRenderActiveTab=renderActiveTab;
-  renderActiveTab=function(tab){
-    if(tab==="shop")return renderShop();
-    return originalRenderActiveTab(tab);
-  };
+  // Expose the shop renderer to the main navigation router.
+  window.MYWAY_REWARDS = { renderShop };
   const originalRenderGamesTab=window.renderGamesTab;
   // Existing mini-games stay intact; append a fourth game card when their screen renders.
   document.addEventListener("click",e=>{
