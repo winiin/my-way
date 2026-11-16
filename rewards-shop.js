@@ -7,6 +7,7 @@
   DATA.ownedThemes = Array.isArray(DATA.ownedThemes) ? DATA.ownedThemes : ["default"];
   DATA.activeTheme = DATA.activeTheme || "default";
   DATA.activeBadge = DATA.activeBadge || "✦";
+  DATA.ownedBadges = Array.isArray(DATA.ownedBadges) ? DATA.ownedBadges : [];
   DATA.rewardedGames = DATA.rewardedGames && typeof DATA.rewardedGames === "object" ? DATA.rewardedGames : {};
 
   const items = [
@@ -28,7 +29,7 @@
   function renderShop() {
     const coins=Number(DATA.coins)||0;
     const cards=items.map(item=>{
-      const owned=item.type==="theme" ? DATA.ownedThemes.includes(item.id) : DATA.activeBadge===item.emoji;
+      const owned=item.type==="theme" ? DATA.ownedThemes.includes(item.id) : DATA.ownedBadges.includes(item.emoji);
       const active=item.type==="theme" && DATA.activeTheme===item.id;
       const action=active?"Выбрано":owned?(item.type==="theme"?"Применить":"Выбрать"):"Купить · "+item.price+" ✦";
       return '<article class="card gf-shop-card"><div class="gf-shop-preview gf-preview-'+item.id+'">'+(item.emoji||"✦")+'</div><div class="gf-shop-info"><strong>'+item.name+'</strong><p>'+item.desc+'</p><small>'+(item.type==="theme"?"Тема оформления":"Значок профиля")+'</small></div><button class="btn '+(active?"btn-ghost":"btn-primary")+' btn-sm" data-shop-item="'+item.id+'" '+(active?"disabled":"")+'>'+action+'</button></article>';
@@ -36,11 +37,11 @@
     document.getElementById("content").innerHTML='<div class="gf-intro"><div><div class="gf-eyebrow">MY WAY · REWARDS</div><h2>Магазин наград</h2><p>Обменивай монеты за победы на темы и значки профиля.</p></div><div class="gf-stat"><strong>'+coins+'</strong><span>✦ монет</span></div></div><div class="gf-shop-grid">'+cards+'</div>';
     document.querySelectorAll("[data-shop-item]").forEach(button=>button.addEventListener("click",()=>{
       const item=items.find(x=>x.id===button.dataset.shopItem); if(!item)return;
-      const owned=item.type==="theme"?DATA.ownedThemes.includes(item.id):DATA.activeBadge===item.emoji;
+      const owned=item.type==="theme"?DATA.ownedThemes.includes(item.id):DATA.ownedBadges.includes(item.emoji);
       if(!owned){
         if((Number(DATA.coins)||0)<item.price){notifyUser("Не хватает монет. Побеждай в играх, чтобы заработать ещё.");return;}
         DATA.coins-=item.price;
-        if(item.type==="theme") DATA.ownedThemes.push(item.id);
+        if(item.type==="theme") DATA.ownedThemes.push(item.id); else DATA.ownedBadges.push(item.emoji);
       }
       if(item.type==="theme") DATA.activeTheme=item.id;
       else DATA.activeBadge=item.emoji;
@@ -84,7 +85,7 @@
   });
   const observer=new MutationObserver(()=>{
     const grid=document.querySelector("#content .gf-game-grid");
-    if(!grid||document.getElementById("gfStartDetective"))return;
+    if(!grid||!document.getElementById("gfStartQuiz")||document.getElementById("gfStartDetective"))return;
     const card=document.createElement("article");
     card.className="card gf-game-card";
     card.innerHTML='<div class="gf-game-icon">🕵️</div><h3>Финансовый детектив</h3><p>Находи подозрительные предложения и защищай свои деньги.</p><button class="btn btn-primary" id="gfStartDetective" type="button">Начать игру</button>';
