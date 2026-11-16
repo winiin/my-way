@@ -1095,8 +1095,10 @@ function renderNav() {
 
 function renderSBUser() {
   const el=document.getElementById('sbUser'); if(!el) return;
+  const photo=DATA.profilePhoto||'';
+  const decor=DATA.activeBadge||'';
   el.innerHTML=`
-    <div class="su-av">${CUR_USER.avatar}</div>
+    <div class="su-av-wrap"><div class="su-av">${photo?`<img src="${photo}" alt="Аватар"/>`:esc(CUR_USER.avatar||'✦')}</div>${decor?`<span class="su-av-decor">${esc(decor)}</span>`:''}</div>
     <div class="su-info">
       <div class="su-name">${CUR_USER.name}</div>
       <div class="su-rank">🏅 ${DATA.rank} · Lv.${DATA.level}</div>
@@ -1183,19 +1185,24 @@ function renderFooter() {
 function showProfile() {
   const inc=DATA.transactions.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=DATA.transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const m=document.createElement('div'); m.className='modal-ov'; m.id='profileModal';
-  const accs=getAccounts(); const u=accs[CUR_USER.email];
+  const m=document.createElement('div');m.className='modal-ov';m.id='profileModal';
+  const accs=getAccounts(),u=accs[CUR_USER.email];
   const joinDays=Math.floor((Date.now()-(u?.joinedAt||Date.now()))/864e5);
+  const photo=DATA.profilePhoto||'',decor=DATA.activeBadge||'';
+  const avatarMarkup=photo?'<img src="'+photo+'" alt="Аватар пользователя"/>':'<span>'+esc(CUR_USER.avatar||'✦')+'</span>';
   m.innerHTML=`<div class="modal-box">
-    <div class="modal-hdr">
-      <h3><i class="fas fa-user"></i> ${t('profile')}</h3>
-      <button class="modal-close" onclick="document.getElementById('profileModal').remove()">✕</button>
-    </div>
+    <div class="modal-hdr"><h3><i class="fas fa-user"></i> ${t('profile')}</h3><button class="modal-close" onclick="document.getElementById('profileModal').remove()">✕</button></div>
     <div style="text-align:center;margin-bottom:16px;">
-      <div class="prof-av">${CUR_USER.avatar}</div>
-      <div style="font-size:17px;font-weight:700;">${CUR_USER.name}</div>
-      <div style="font-size:12px;color:var(--tx3);">${CUR_USER.email}</div>
+      <div class="prof-avatar-wrap"><div class="prof-av">${avatarMarkup}</div>${decor?'<span class="prof-av-decor">'+esc(decor)+'</span>':''}</div>
+      <div style="font-size:17px;font-weight:700;">${esc(CUR_USER.name)}</div>
+      <div style="font-size:12px;color:var(--tx3);">${esc(CUR_USER.email)}</div>
       <div style="font-size:11px;color:var(--tx3);margin-top:3px;">День ${joinDays}</div>
+      <div class="profile-avatar-actions">
+        <label class="btn btn-primary btn-sm" for="profileAvatarFile"><i class="fas fa-camera"></i> Загрузить фото</label>
+        <input id="profileAvatarFile" type="file" accept="image/*" hidden>
+        <button class="btn btn-ghost btn-sm" id="profileAvatarRemove" type="button" ${photo?'':'disabled'}>Убрать фото</button>
+      </div>
+      <div class="profile-decor-note">Значки из магазина отображаются поверх фотографии как декор.</div>
     </div>
     <div class="prof-stats">
       <div class="pstat"><span class="pstat-v">${DATA.transactions.length}</span><div class="pstat-l">${t('allOps')}</div></div>
@@ -1205,28 +1212,41 @@ function showProfile() {
     </div>
     <div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:var(--r);font-size:12px;">
       <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="color:var(--tx3);">${t('balance')}</span><strong style="color:${inc-exp>=0?'var(--green)':'var(--red)'};">${fmtAmt(inc-exp)}</strong></div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="color:var(--tx3);">Ранг</span><strong style="color:var(--gold);">🏅 ${DATA.rank}</strong></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="color:var(--tx3);">Ранг</span><strong style="color:var(--gold);">🏅 ${esc(DATA.rank)}</strong></div>
       <div style="display:flex;justify-content:space-between;"><span style="color:var(--tx3);">XP</span><strong style="color:var(--acc2);">${DATA.xp} XP</strong></div>
     </div>
     <div style="margin-top:12px;padding:12px;background:var(--bg3);border-radius:var(--r);">
       <div style="font-size:11px;font-weight:700;color:var(--tx3);margin-bottom:6px;">🔑 API ключ для ИИ-функций</div>
       <div style="display:flex;gap:6px;">
-        <input type="password" id="profileApiKey" placeholder="sk-ant-..." value="${localStorage.getItem('mw_api_key')||''}"
-          style="flex:1;padding:8px 10px;background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;font-size:12px;color:var(--tx);outline:none;"/>
+        <input type="password" id="profileApiKey" placeholder="sk-ant-..." value="${localStorage.getItem('mw_api_key')||''}" style="flex:1;padding:8px 10px;background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;font-size:12px;color:var(--tx);outline:none;"/>
         <button id="saveProfileKey" style="padding:8px 12px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">Сохранить</button>
       </div>
       <div style="font-size:10px;color:var(--tx3);margin-top:3px;">Нужен для PDF-анализа · <a href="https://console.anthropic.com/keys" target="_blank" style="color:var(--acc2);">Получить ключ</a></div>
     </div>
-    <button class="btn btn-danger wf" style="margin-top:12px;" onclick="document.getElementById('profileModal').remove();doLogout()">
-      <i class="fas fa-sign-out-alt"></i> ${t('logout')}
-    </button>
+    <button class="btn btn-danger wf" style="margin-top:12px;" onclick="document.getElementById('profileModal').remove();doLogout()"><i class="fas fa-sign-out-alt"></i> ${t('logout')}</button>
   </div>`;
   document.body.appendChild(m);
-  const skBtn = document.getElementById('saveProfileKey');
-  if (skBtn) skBtn.addEventListener('click', () => {
-    const v = (document.getElementById('profileApiKey')?.value || '').trim();
-    if (v) { localStorage.setItem('mw_api_key', v); skBtn.textContent = '✓'; skBtn.style.background='var(--green)'; setTimeout(()=>{skBtn.textContent='Сохранить';skBtn.style.background='var(--acc)';},2000); }
-    else alert('Введите ключ');
+  document.getElementById('profileAvatarFile')?.addEventListener('change',()=>{
+    const file=document.getElementById('profileAvatarFile').files?.[0];if(!file)return;
+    if(!file.type.startsWith('image/')){notify('Выбери файл изображения.','error');return;}
+    if(file.size>8*1024*1024){notify('Фото должно быть меньше 8 МБ.','error');return;}
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const image=new Image();
+      image.onload=()=>{
+        const canvas=document.createElement('canvas'),size=256;canvas.width=size;canvas.height=size;
+        const ctx=canvas.getContext('2d'),side=Math.min(image.width,image.height);
+        ctx.drawImage(image,(image.width-side)/2,(image.height-side)/2,side,side,0,0,size,size);
+        DATA.profilePhoto=canvas.toDataURL('image/jpeg',0.82);saveData();renderSBUser();m.remove();showProfile();
+      };
+      image.onerror=()=>notify('Не удалось открыть это изображение.','error');image.src=reader.result;
+    };reader.readAsDataURL(file);
+  });
+  document.getElementById('profileAvatarRemove')?.addEventListener('click',()=>{DATA.profilePhoto='';saveData();renderSBUser();m.remove();showProfile();});
+  const skBtn=document.getElementById('saveProfileKey');
+  if(skBtn)skBtn.addEventListener('click',()=>{
+    const v=(document.getElementById('profileApiKey')?.value||'').trim();
+    if(v){localStorage.setItem('mw_api_key',v);skBtn.textContent='✓';skBtn.style.background='var(--green)';setTimeout(()=>{skBtn.textContent='Сохранить';skBtn.style.background='var(--acc)';},2000);}else alert('Введите ключ');
   });
   m.addEventListener('click',e=>{if(e.target===m)m.remove();});
 }
