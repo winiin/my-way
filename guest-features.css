@@ -54,3 +54,5 @@
 .gf-game-history b{color:var(--green);white-space:nowrap}
 @media(max-width:760px){.gf-game-grid{grid-template-columns:1fr}.gf-game-card{min-height:0}.gf-intro{align-items:flex-start}.gf-stat{min-width:90px}.gf-budget-form{grid-template-columns:1fr}}
 @media(max-width:480px){.gf-intro{display:block}.gf-stat{display:inline-block;margin-top:12px}.gf-item{align-items:flex-start}.gf-item-actions{flex-direction:column;align-items:flex-end}.gf-inline-form .btn,.gf-task-form .btn{width:100%;justify-content:center}}
+
+.gf-coming{display:inline-block;margin-top:8px;padding:4px 9px;border:1px solid var(--brd2);border-radius:20px;color:var(--tx3);font-size:9px;font-weight:800;letter-spacing:1px}
