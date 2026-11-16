@@ -49,24 +49,56 @@
       if(typeof notify==="function")notifyUser("Награда применена!");
     }));
   }
-  function renderDetective() {
-    const cases=[
-      {q:"Тебе обещают гарантированную прибыль 40% за неделю, если перевести деньги сегодня. Что делать?",a:["Сразу перевести","Проверить компанию и не верить обещаниям гарантированной высокой доходности","Попросить друга перевести"],c:1},
-      {q:"Незнакомец просит код из SMS, чтобы «подтвердить перевод».",a:["Отправить код","Не сообщать код никому","Сфотографировать карту"],c:1},
-      {q:"Магазин предлагает товар намного дешевле рынка, но требует оплатить переводом на личную карту.",a:["Проверить продавца и безопасные способы оплаты","Оплатить немедленно","Отправить данные карты в чат"],c:0}
+  function startDetective(difficulty,onComplete) {
+    const level=Math.max(1,Math.min(4,Number(difficulty)||1));
+    const today=new Date();
+    const day=today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate();
+    let seed=2166136261;const seedText=day+"|detective|"+level;
+    for(let i=0;i<seedText.length;i++){seed^=seedText.charCodeAt(i);seed=Math.imul(seed,16777619);}
+    let state=seed>>>0;const random=()=>{state=(Math.imul(1664525,state)+1013904223)>>>0;return state/4294967296;};
+    const banks=[
+      [
+        ["Обещают гарантированную прибыль 40% за неделю, если перевести деньги сегодня.",["Сразу перевести","Проверить компанию и не верить обещаниям гарантированной высокой доходности","Попросить друга перевести"],1],
+        ["Незнакомец просит код из SMS для подтверждения перевода.",["Отправить код","Не сообщать код никому","Сфотографировать карту"],1],
+        ["Продавец просит оплатить товар переводом на личную карту.",["Проверить продавца и безопасный способ оплаты","Оплатить немедленно","Отправить данные карты"],0],
+        ["Вам звонят якобы из банка и просят установить приложение по ссылке.",["Установить сразу","Прервать разговор и связаться с банком по официальному номеру","Назвать пароль"],1],
+        ["В сообщении обещают подарок, но просят оплатить небольшую комиссию.",["Проверить источник и не платить за сомнительный приз","Оплатить","Отправить код"],0]
+      ],
+      [
+        ["Инвестиционный проект показывает доходность 5% в день и просит привести друзей.",["Проверить документы и риски, не считать доход гарантированным","Вложить все накопления","Взять кредит"],0],
+        ["Вам прислали ссылку на вход в банк с похожим, но странным адресом.",["Ввести пароль","Открыть официальный сайт или приложение самостоятельно","Переслать ссылку"],1],
+        ["Знакомый просит оформить на вас кредит для него.",["Согласиться без документов","Оценить юридическую ответственность и отказаться от сомнительной схемы","Передать доступ к банку"],1],
+        ["В выписке появилась незнакомая операция.",["Игнорировать","Сразу обратиться в банк через официальный канал и проверить карту","Написать данные карты в общий чат"],1],
+        ["Сервис предлагает кредит без проверки условий и скрывает полную стоимость.",["Сравнить полную стоимость и договор до решения","Подписать сразу","Ориентироваться на рекламный платёж"],0]
+      ],
+      [
+        ["Платформа обещает доход выше рынка, но не раскрывает модель заработка.",["Проверить лицензии, документы и независимые сведения; не переводить до проверки","Вложить больше ради бонуса","Попросить знакомого внести деньги"],0],
+        ["Вам предлагают стать посредником и принимать чужие переводы на свою карту.",["Согласиться за комиссию","Отказаться: это может быть частью мошеннической схемы","Передать данные карты"],1],
+        ["Письмо о блокировке счёта содержит вложенный файл и срочное требование войти.",["Открыть файл","Проверить сообщение в официальном приложении банка, не открывая вложение","Переслать коллегам"],1],
+        ["В договоре ставка привлекательная, но есть комиссии и штрафы мелким шрифтом.",["Оценить полную стоимость и все условия до подписания","Смотреть только на ставку","Подписать, не читая"],0],
+        ["Вас просят сообщить одноразовый код для отмены якобы подозрительной операции.",["Сообщить код","Самостоятельно позвонить в банк по официальному номеру; код не сообщать","Отправить фото карты"],1],
+        ["Проект показывает отзывы, но не даёт проверить юридическое лицо.",["Считать отзывы достаточным доказательством","Проверить регистрацию, лицензии и независимые источники","Внести минимальную сумму"],1]
+      ],
+      [
+        ["Сложная инвестиционная схема обещает фиксированную высокую доходность, но не объясняет источник выплат.",["Проверить структуру, регуляторный статус, контрагентов и риски; не переводить средства до независимой проверки","Оценить только отзывы","Вложить резерв ради диверсификации"],0],
+        ["Контрагент просит провести платёж через ваш счёт, чтобы обойти лимиты.",["Согласиться, если платят комиссию","Отказаться и не участвовать в обходе контроля","Передать данные доступа"],1],
+        ["В уведомлении о налоговом возврате требуют ввести банковские данные на стороннем домене.",["Проверить право на возврат через официальный государственный сервис","Заполнить форму сразу","Отправить данные отправителю"],0],
+        ["Финансовый продукт сложен, а продавец торопит подписать договор сегодня.",["Попросить документы, изучить риски и при необходимости получить независимую консультацию","Подписать из-за срока акции","Ориентироваться на устные обещания"],0],
+        ["Вам предлагают гарантировать чужой долг, не раскрывая финансовое положение заёмщика.",["Подписать ради доверия","Оценить возможную ответственность и не соглашаться без полного понимания договора","Передать копию карты"],1],
+        ["Отчёт показывает высокую прошлую доходность, но не раскрывает просадки и комиссии.",["Считать прошлый результат гарантией","Изучить методику расчёта, риски, просадки и чистую доходность","Сравнить только лучший месяц"],1]
+      ]
     ];
-    const area=document.getElementById("gfGameArea");
-    area.innerHTML='<section class="card gf-game-play"><h3>Финансовый детектив</h3><p>Найди три подозрительных ситуации.</p><form id="gfDetectiveForm">'+cases.map((x,i)=>'<fieldset><legend>'+(i+1)+'. '+x.q+'</legend>'+x.a.map((a,j)=>'<label class="gf-answer"><input type="radio" name="case'+i+'" value="'+j+'" required><span>'+a+'</span></label>').join("")+'</fieldset>').join("")+'<button class="btn btn-primary" type="submit">Проверить решения</button></form></section>';
+    const bank=banks[level-1].slice();for(let i=bank.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[bank[i],bank[j]]=[bank[j],bank[i]];}
+    const count=[3,4,5,6][level-1],cases=bank.slice(0,count),area=document.getElementById("gfGameArea");
+    area.innerHTML='<section class="card gf-game-play"><h3>Финансовый детектив · '+["Лёгкий","Средний","Сложный","Эксперт"][level-1]+'</h3><p>Найди безопасное решение. Максимальная награда за этот уровень — '+[5,8,12,16][level-1]+' ✦.</p><form id="gfDetectiveForm">'+
+      cases.map((x,i)=>'<fieldset><legend>'+(i+1)+'. '+x[0]+'</legend>'+x[1].map((answer,j)=>'<label class="gf-answer"><input type="radio" name="case'+i+'" value="'+j+'" required><span>'+answer+'</span></label>').join("")+'</fieldset>').join("")+
+      '<button class="btn btn-primary" type="submit">Проверить решения</button></form></section>';
+    area.scrollIntoView({behavior:"smooth",block:"start"});
     document.getElementById("gfDetectiveForm").addEventListener("submit",e=>{
       e.preventDefault();const data=new FormData(e.currentTarget);
-      const score=cases.reduce((sum,x,i)=>sum+(Number(data.get("case"+i))===x.c?1:0),0);
-      if(score!==3){notifyUser("Правильных решений: "+score+"/3. Попробуй ещё раз.");return;}
-      const key="detective:"+todayKey();
-      if(DATA.rewardedGames[key]){notifyUser("Награда за эту игру уже получена сегодня.");return;}
-      DATA.rewardedGames[key]=true;DATA.xp=(Number(DATA.xp)||0)+25;DATA.coins=(Number(DATA.coins)||0)+8;
-      if(DATA.xp>=100){DATA.level=(Number(DATA.level)||1)+Math.floor(DATA.xp/100);DATA.xp%=100;if(typeof updateRank==="function")updateRank();}
-      saveData();renderHeader();renderSBUser();
-      notifyUser("Победа! +25 XP и +8 монет. Загляни в магазин наград.");
+      const score=cases.reduce((sum,x,i)=>sum+(Number(data.get("case"+i))===x[2]?1:0),0);
+      if(typeof onComplete==="function")onComplete(cases.length-score,cases.length);
+      notifyUser("Правильных решений: "+score+"/"+cases.length+". Ошибок: "+(cases.length-score)+".");
     });
   }
 
@@ -74,21 +106,7 @@
   ["ru","kz","en"].forEach(lang=>{if(L[lang]&&L[lang].nav)L[lang].nav.shop=labels[lang];});
   if(!TABS.some(x=>x.id==="shop"))TABS.push({id:"shop",icon:"fa-store"});
   // Expose the shop renderer to the main navigation router.
-  window.MYWAY_REWARDS = { renderShop };
-  const originalRenderGamesTab=window.renderGamesTab;
-  // Existing mini-games stay intact; append a fourth game card when their screen renders.
-  document.addEventListener("click",e=>{
-    if(e.target&&e.target.id==="gfStartDetective")renderDetective();
-  });
-  const observer=new MutationObserver(()=>{
-    const grid=document.querySelector("#content .gf-game-grid");
-    if(!grid||!document.getElementById("gfStartQuiz")||document.getElementById("gfStartDetective"))return;
-    const card=document.createElement("article");
-    card.className="card gf-game-card";
-    card.innerHTML='<div class="gf-game-icon">🕵️</div><h3>Финансовый детектив</h3><p>Находи подозрительные предложения и защищай свои деньги.</p><button class="btn btn-primary" id="gfStartDetective" type="button">Начать игру</button>';
-    grid.appendChild(card);
-  });
-  observer.observe(document.getElementById("content"),{childList:true,subtree:true});
+  window.MYWAY_REWARDS = { renderShop, startDetective };
   const oldHeader=renderHeader;
   renderHeader=function(){oldHeader();applyCosmetics();};
   applyCosmetics();
