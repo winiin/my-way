@@ -195,9 +195,11 @@ function esc(s) {
 function fmtAmt(kzt) {
   const c = CUR[CUR_KEY]||CUR.KZT;
   const v = kzt * c.rate;
+  const locale = LANG==='en' ? 'en-US' : LANG==='kz' ? 'kk-KZ' : 'ru-RU';
   if(Math.abs(v)>=1e6) return `${(v/1e6).toFixed(2)}M ${c.sym}`;
   if(Math.abs(v)>=1e3) return `${(v/1e3).toFixed(1)}K ${c.sym}`;
-  return `${Math.round(v).toLocaleString('ru-RU')} ${c.sym}`;
+  const digits = CUR_KEY==='KZT' ? 0 : 2;
+  return `${v.toLocaleString(locale,{minimumFractionDigits:digits,maximumFractionDigits:digits})} ${c.sym}`;
 }
 
 function catEmoji(cat) {
@@ -1619,7 +1621,7 @@ function renderTxTab() {
         </div>
         <div class="fgrp" style="margin:0;">
           <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);display:block;margin-bottom:5px;">${LANG==='kz'?'Сома':LANG==='en'?'Amount':'Сумма'} (${(CUR[CUR_KEY]||CUR.KZT).sym})</label>
-          <input class="finput wf" type="number" id="txAmount" placeholder="0" min="1"/>
+          <input class="finput wf" type="number" id="txAmount" placeholder="0" min="0.01" step="0.01"/>
         </div>
         <div class="fgrp" style="margin:0;">
           <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);display:block;margin-bottom:5px;">Категория</label>
