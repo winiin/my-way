@@ -23,8 +23,7 @@
   const notifyUser = (message) => { if (typeof notify === "function") notify(message,"info"); else alert(message); };
   function applyCosmetics() {
     document.documentElement.dataset.gfSkin = DATA.activeTheme || "default";
-    const avatar=document.querySelector("#sbUser .su-av");
-    if(avatar) avatar.textContent=DATA.activeBadge||"✦";
+    if(typeof renderSBUser==="function") renderSBUser();
   }
   function renderShop() {
     const coins=Number(DATA.coins)||0;
@@ -97,8 +96,15 @@
     document.getElementById("gfDetectiveForm").addEventListener("submit",e=>{
       e.preventDefault();const data=new FormData(e.currentTarget);
       const score=cases.reduce((sum,x,i)=>sum+(Number(data.get("case"+i))===x[2]?1:0),0);
-      if(typeof onComplete==="function")onComplete(cases.length-score,cases.length);
-      notifyUser("Правильных решений: "+score+"/"+cases.length+". Ошибок: "+(cases.length-score)+".");
+      const mistakes=cases.length-score;
+      const feedback=cases.map((item,i)=>{
+        const chosen=Number(data.get("case"+i)),ok=chosen===item[2];
+        return {ok,title:(i+1)+". "+item[0],detail:ok?"Верное решение: "+item[1][item[2]]+". Оно снижает риск и защищает твои данные.":"Твой выбор: "+item[1][chosen]+". Правильное решение: "+item[1][item[2]]+". Не торопись, проверь источник и используй только официальные каналы."};
+      });
+      if(typeof onComplete==="function")onComplete(mistakes,cases.length,feedback);
+      const result=document.createElement("section");result.className="card gf-game-feedback";result.innerHTML='<h3>Результат: '+score+'/'+cases.length+'</h3>'+feedback.map(row=>'<div class="gf-feedback-row '+(row.ok?'is-correct':'is-wrong')+'"><strong>'+(row.ok?'✓ ':'✕ ')+row.title+'</strong><p>'+row.detail+'</p></div>').join("");
+      e.currentTarget.parentElement.appendChild(result);result.scrollIntoView({behavior:"smooth",block:"nearest"});
+      notifyUser("Правильных решений: "+score+"/"+cases.length+". Ошибок: "+mistakes+".");
     });
   }
 
