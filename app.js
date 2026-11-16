@@ -1059,6 +1059,11 @@ const TABS=[
   {id:'tips',         icon:'fa-lightbulb'},
   {id:'import',       icon:'fa-file-pdf'},
   {id:'credits',      icon:'fa-hand-holding-usd'},
+  {id:'habits',       icon:'fa-calendar-check'},
+  {id:'tasks',        icon:'fa-list-check'},
+  {id:'games',        icon:'fa-puzzle-piece'},
+  {id:'learning',     icon:'fa-book-open'},
+  {id:'shop',         icon:'fa-store'},
 ];
 let TAB='dashboard';
 
@@ -1150,7 +1155,12 @@ function renderActiveTab(tab) {
   const fns={dashboard:renderDashboard,transactions:renderTxTab,cards:renderCardsTab,
     deposits:renderDepositsTab,stats:renderStatsTab,goals:renderGoalsTab,
     gamification:renderGamTab,ai:renderAITab,tips:renderTipsTab,import:renderImportTab,
-    credits:renderCreditsTab};
+    credits:renderCreditsTab,
+    habits:()=>window.MYWAY_GUEST_TABS?.habits?.(),
+    tasks:()=>window.MYWAY_GUEST_TABS?.tasks?.(),
+    games:()=>window.MYWAY_GUEST_TABS?.games?.(),
+    learning:()=>window.MYWAY_GUEST_TABS?.learning?.(),
+    shop:()=>window.MYWAY_REWARDS?.renderShop?.()};
   (fns[tab]||renderDashboard)();
 }
 
