@@ -242,7 +242,30 @@
     DATA.guestGameResults.push({name:name,gameKey:gameKey,day:day,xp:xp,coins:stars,stars:stars,mistakes:errors,difficulty:level.name,date:Date.now()});
     DATA.guestGameResults=DATA.guestGameResults.slice(-40);
     reward(xp,stars,"Игра завершена · "+level.name+" · ошибок: "+errors);
-    renderGamesTab();
+    // Do not rebuild the game screen here: keeping the current form mounted prevents UI flicker.
+  }
+  function showGameFeedback(title, rows) {
+    const area=document.getElementById("gfGameArea");
+    if(!area)return;
+    let panel=document.getElementById("gfGameFeedback");
+    if(!panel){panel=document.createElement("section");panel.id="gfGameFeedback";panel.className="card gf-game-feedback";area.appendChild(panel);}
+    panel.innerHTML='<h3>'+escText(title)+'</h3>'+rows.map(row=>'<div class="gf-feedback-row '+(row.ok?'is-correct':'is-wrong')+'"><strong>'+(row.ok?'✓ ':'✕ ')+escText(row.title)+'</strong><p>'+escText(row.detail)+'</p></div>').join("");
+    panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+  function explainQuizQuestion(question, correctAnswer) {
+    const q=question.toLowerCase();
+    if(q.includes("резерв"))return "Резервный фонд нужен для неожиданных расходов, чтобы не пришлось срочно занимать деньги.";
+    if(q.includes("бюджет"))return "Бюджет помогает заранее распределить доходы и контролировать расходы.";
+    if(q.includes("доход"))return "Сначала полезно распределить доход по плану и отложить запланированную сумму, а не тратить всё сразу.";
+    if(q.includes("цен"))return "Сравнивать нужно одинаковые единицы товара — так цена будет сопоставимой.";
+    if(q.includes("обязатель"))return "Обязательные расходы нужны для базовых потребностей или регулярных платежей.";
+    if(q.includes("pin")||q.includes("код"))return "PIN и одноразовые коды — секретные данные. Их нельзя сообщать другим людям.";
+    if(q.includes("покуп"))return "Проверка бюджета и сравнение вариантов помогают избежать импульсивных покупок.";
+    if(q.includes("подпис"))return "Подписки — регулярные расходы, поэтому их нужно учитывать и периодически пересматривать.";
+    if(q.includes("инфляц"))return "Инфляция означает общий рост цен и снижение покупательной способности денег.";
+    if(q.includes("диверсификац"))return "Распределение вложений снижает зависимость результата от одного актива.";
+    if(q.includes("ставк")||q.includes("доходност"))return "Сравнивай фактическую доходность с учётом срока, комиссий, инфляции и рисков.";
+    return "Этот вариант верен: "+correctAnswer+". Он лучше учитывает бюджет, условия и финансовые риски.";
   }
   function startQuiz() {
     const level=difficultyLevels[selectedDifficulty-1];
@@ -260,15 +283,22 @@
     document.getElementById("gfQuizForm").addEventListener("submit",e=>{
       e.preventDefault();const data=new FormData(e.currentTarget);
       const score=questions.reduce((sum,q,i)=>sum+(Number(data.get("q"+i))===q[2]?1:0),0);
+      const feedback=questions.map((q,i)=>{
+        const chosen=Number(data.get("q"+i)),ok=chosen===q[2];
+        return {ok,title:(i+1)+". "+q[0],detail:ok?"Верно. "+explainQuizQuestion(q[0],q[q[2]+1]||q[1][q[2]]):"Твой ответ: "+q[1][chosen]+". Правильный ответ: "+q[1][q[2]]+". Почему: "+explainQuizQuestion(q[0],q[1][q[2]])};
+      });
       recordGame("Финансовый квиз","quiz",questions.length-score,questions.length);
-      if(typeof notify==="function")notify("Результат: "+score+"/"+questions.length+" правильных. Ошибок: "+(questions.length-score)+".","info");
+      showGameFeedback("Результат: "+score+"/"+questions.length+" · правильные ответы и объяснения",feedback);
     });
   }
   function startBudget() {
     const level=difficultyLevels[selectedDifficulty-1];
     const random=seededRandom(dailySeed("budget:"+selectedDifficulty));
     const totals=[80000,120000,180000,250000];
-    const total=totals[selectedDifficulty-1]+Math.floor(random()*10)*5000;
+    const baseKzt=totals[selectedDifficulty-1]+Math.floor(random()*10)*5000;
+    const currency=CUR[CUR_KEY]||CUR.KZT;
+    const total=Math.max(1,Math.round(baseKzt*currency.rate));
+    const symbol=currency.sym;
     const categories=[
       ["Необходимые расходы","needs"],["Накопления","savings"],["Обучение","learning"],["Развлечения","fun"],
       ["Транспорт","transport"],["Здоровье","health"],["Подарки и другое","other"]
@@ -277,28 +307,29 @@
     const needsMax=[65,55,50,45][selectedDifficulty-1];
     const learningMin=[0,5,7,8][selectedDifficulty-1];
     const area=document.getElementById("gfGameArea");
-    area.innerHTML='<section class="card gf-game-play"><h3>Собери бюджет · '+level.name+'</h3><p>Доход на этот день: <strong>'+total.toLocaleString("ru-RU")+' ₸</strong>. Распредели всю сумму по категориям. Накопления — не менее '+savingsMin+'%, необходимые расходы — не более '+needsMax+'%'+(learningMin?' , обучение — не менее '+learningMin+'%':'')+'. Неиспользованный остаток тоже нужно распределить.</p><form id="gfBudgetForm" class="gf-budget-form">'+
-      categories.map(c=>'<label>'+c[0]+'<input class="finput" name="'+c[1]+'" type="number" min="0" step="100" placeholder="Введи сумму в ₸" required></label>').join("")+
+    area.innerHTML='<section class="card gf-game-play"><h3>Собери бюджет · '+level.name+'</h3><p>Доход на этот день: <strong>'+total.toLocaleString(LANG==="en"?"en-US":LANG==="kz"?"kk-KZ":"ru-RU")+' '+symbol+'</strong>. Распредели всю сумму. Накопления — не менее '+savingsMin+'%, необходимые расходы — не более '+needsMax+'%'+(learningMin?', обучение — не менее '+learningMin+'%':'')+'. Валюта берётся из выбранной настройки сайта.</p><form id="gfBudgetForm" class="gf-budget-form">'+
+      categories.map(c=>'<label>'+c[0]+' ('+symbol+')<input class="finput" name="'+c[1]+'" type="number" min="0" step="1" placeholder="Введи сумму в '+symbol+'" required></label>').join("")+
       '<button class="btn btn-primary" type="submit">Проверить бюджет</button></form></section>';
     document.getElementById("gfBudgetForm").addEventListener("submit",e=>{
       e.preventDefault();const values=Object.fromEntries(new FormData(e.currentTarget).entries());
       const amounts=categories.map(c=>Number(values[c[1]]));
-      let mistakes=0;
-      if(amounts.some(v=>!Number.isFinite(v)||v<0))mistakes++;
-      if(amounts.reduce((sum,v)=>sum+v,0)!==total)mistakes++;
-      if((Number(values.savings)||0)<total*savingsMin/100)mistakes++;
-      if((Number(values.needs)||0)>total*needsMax/100)mistakes++;
-      if(learningMin&&(Number(values.learning)||0)<total*learningMin/100)mistakes++;
-      if(mistakes===0){
-        recordGame("Собери бюджет","budget",0,5);
-        if(typeof notify==="function")notify("Бюджет сбалансирован! Все условия выполнены.","success");
-      } else {
-        recordGame("Собери бюджет","budget",mistakes,5);
-        if(typeof notify==="function")notify("Есть "+mistakes+" ошибки в проверке бюджета. Награда уменьшена за каждое нарушенное условие.","info");
-      }
+      const sum=amounts.reduce((a,b)=>a+b,0);
+      const feedback=[];
+      const totalOk=amounts.every(v=>Number.isFinite(v)&&v>=0)&&sum===total;
+      const savingsOk=(Number(values.savings)||0)>=total*savingsMin/100;
+      const needsOk=(Number(values.needs)||0)<=total*needsMax/100;
+      const learningOk=!learningMin||(Number(values.learning)||0)>=total*learningMin/100;
+      feedback.push({ok:totalOk,title:"Баланс бюджета",detail:totalOk?"Распределена вся сумма: "+sum.toLocaleString()+" "+symbol+".":"Сумма категорий сейчас "+sum.toLocaleString()+" "+symbol+", а доход — "+total.toLocaleString()+" "+symbol+". Сложи все категории так, чтобы они точно равнялись доходу."});
+      feedback.push({ok:savingsOk,title:"Накопления · минимум "+savingsMin+"%",detail:savingsOk?"Отложено "+Number(values.savings).toLocaleString()+" "+symbol+".":"Нужно отложить не менее "+Math.ceil(total*savingsMin/100).toLocaleString()+" "+symbol+". Сначала выдели эту часть, затем распределяй остаток."});
+      feedback.push({ok:needsOk,title:"Необходимые расходы · максимум "+needsMax+"%",detail:needsOk?"Лимит соблюдён.":"Необходимые расходы не должны превышать "+Math.floor(total*needsMax/100).toLocaleString()+" "+symbol+". Попробуй перенести часть суммы из этой категории в другие."});
+      if(learningMin)feedback.push({ok:learningOk,title:"Обучение · минимум "+learningMin+"%",detail:learningOk?"Условие выполнено.":"На обучение нужно выделить не менее "+Math.ceil(total*learningMin/100).toLocaleString()+" "+symbol+"."});
+      const mistakes=feedback.filter(x=>!x.ok).length;
+      recordGame("Собери бюджет","budget",mistakes,feedback.length);
+      showGameFeedback(mistakes?"Бюджет нужно поправить":"Отлично! Бюджет сбалансирован",feedback);
     });
     area.scrollIntoView({behavior:"smooth",block:"start"});
   }
+
   function startGoal() {
     const level=difficultyLevels[selectedDifficulty-1];
     const random=seededRandom(dailySeed("goal:"+selectedDifficulty));
@@ -311,9 +342,14 @@
       '<button class="btn btn-primary" type="submit">Проверить план</button></form></section>';
     document.getElementById("gfGoalForm").addEventListener("submit",e=>{
       e.preventDefault();const data=new FormData(e.currentTarget);
-      let mistakes=0;
-      options.forEach((x,i)=>{if(data.has("s"+i)!==x.correct)mistakes++;});
+      let mistakes=0;const feedback=[];
+      options.forEach((x,i)=>{
+        const chosen=data.has("s"+i);
+        if(chosen!==x.correct)mistakes++;
+        feedback.push({ok:chosen===x.correct,title:x.text,detail:x.correct?"Это разумный шаг: он помогает сделать цель измеримой и управляемой.":chosen?"Этот пункт лучше не выбирать: он может добавить лишний риск или помешать плану.":"Этот шаг тоже важен: "+x.text+"."});
+      });
       recordGame("План финансовой цели","goal",mistakes,options.length);
+      showGameFeedback("Проверка плана · ошибок: "+mistakes,feedback);
     });
     area.scrollIntoView({behavior:"smooth",block:"start"});
   }
