@@ -54,16 +54,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 
 /* ═══ APP LAYOUT ═══ */
 .app-layout{display:flex;min-height:100vh;}
-.sidebar{width:var(--sw);min-height:100vh;background:var(--bg2);border-right:1px solid var(--brd);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:200;transition:transform .26s cubic-bezier(.4,0,.2,1);}
+.sidebar{width:var(--sw);height:100vh;height:100dvh;min-height:0;background:var(--bg2);border-right:1px solid var(--brd);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:200;overflow:hidden;transition:transform .26s cubic-bezier(.4,0,.2,1);}
 .sb-logo{display:flex;align-items:center;gap:10px;padding:18px 16px 14px;border-bottom:1px solid var(--brd);}
 .sb-logo-name{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:var(--tx);}
-.sb-nav{flex:1;padding:10px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;}
+.sb-nav{flex:1;min-height:0;padding:10px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;}
 .nav-btn{display:flex;align-items:center;gap:10px;padding:10px 11px;border:none;border-radius:var(--rsm);background:transparent;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--tx2);cursor:pointer;transition:all .14s;width:100%;text-align:left;white-space:nowrap;}
 .nav-btn i{font-size:14px;width:16px;text-align:center;flex-shrink:0;}
 .nav-btn:hover{background:var(--bg3);color:var(--tx);}
 .nav-btn.active{background:linear-gradient(90deg,rgba(124,58,237,.18),rgba(124,58,237,.04));color:var(--acc2);border-left:2.5px solid var(--acc);padding-left:8.5px;}
 .nav-btn.active i{color:var(--acc2);}
-.sb-bottom{padding:10px;border-top:1px solid var(--brd);}
+.sb-bottom{flex-shrink:0;padding:10px;border-top:none;background:var(--bg2);}
 .sb-user{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:var(--rsm);cursor:pointer;transition:background .14s;}
 .sb-user:hover{background:var(--bg3);}
 .su-av{width:30px;height:30px;background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
