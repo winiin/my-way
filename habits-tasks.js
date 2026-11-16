@@ -10,9 +10,9 @@
   DATA.guestGameResults = Array.isArray(DATA.guestGameResults) ? DATA.guestGameResults : [];
 
   const labels = {
-    ru: {habits:"Привычки",tasks:"Задачи",games:"Мини-игры"},
-    kz: {habits:"Әдеттер",tasks:"Тапсырмалар",games:"Шағын ойындар"},
-    en: {habits:"Habits",tasks:"Tasks",games:"Mini games"}
+    ru: {habits:"Привычки",tasks:"Задачи",games:"Мини-игры",learning:"Обучение"},
+    kz: {habits:"Әдеттер",tasks:"Тапсырмалар",games:"Шағын ойындар",learning:"Оқу"},
+    en: {habits:"Habits",tasks:"Tasks",games:"Mini games",learning:"Learning"}
   };
   ["ru","kz","en"].forEach(lang => {
     if (L[lang] && L[lang].nav) Object.assign(L[lang].nav, labels[lang]);
@@ -21,7 +21,8 @@
   [
     {id:"habits",icon:"fa-calendar-check"},
     {id:"tasks",icon:"fa-list-check"},
-    {id:"games",icon:"fa-puzzle-piece"}
+    {id:"games",icon:"fa-puzzle-piece"},
+    {id:"learning",icon:"fa-book-open"}
   ].forEach(tab => {
     if (!TABS.some(item => item.id === tab.id)) TABS.push(tab);
   });
@@ -203,11 +204,39 @@
     area.scrollIntoView({behavior:"smooth",block:"start"});
   }
 
+
+  function renderLearningTab() {
+    document.getElementById("content").innerHTML =
+      '<div class="gf-intro"><div><div class="gf-eyebrow">MY WAY · LEVEL UP YOURSELF</div><h2>Обучение</h2><p>Знания — твой главный ресурс.</p></div></div>' +
+      '<div class="gf-game-grid">' +
+      '<article class="card gf-game-card"><div class="gf-game-icon">₸</div><h3>Финансовая грамотность</h3><p>Доходы, расходы, бюджет и накопления.</p><span class="gf-coming">СКОРО</span></article>' +
+      '<article class="card gf-game-card"><div class="gf-game-icon">◎</div><h3>Постановка целей</h3><p>Планирование и достижение целей.</p><span class="gf-coming">СКОРО</span></article>' +
+      '<article class="card gf-game-card"><div class="gf-game-icon">✧</div><h3>Саморазвитие</h3><p>Привычки, дисциплина и продуктивность.</p><span class="gf-coming">СКОРО</span></article>' +
+      '</div>';
+  }
+
+  const originalRenderHeader = renderHeader;
+  renderHeader = function renderHeaderWithGuestCoins() {
+    originalRenderHeader();
+    const right = document.querySelector("#header .topbar-r");
+    if (!right) return;
+    let badge = document.getElementById("gfCoins");
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.id = "gfCoins";
+      badge.className = "badge b-gold";
+      const themeButton = right.querySelector("#themeBtn");
+      right.insertBefore(badge, themeButton || null);
+    }
+    badge.textContent = "✦ " + (Number(DATA.coins) || 0);
+  };
+
   const originalRenderActiveTab = renderActiveTab;
   renderActiveTab = function(tab) {
     if (tab === "habits") return renderHabitsTab();
     if (tab === "tasks") return renderTasksTab();
     if (tab === "games") return renderGamesTab();
+    if (tab === "learning") return renderLearningTab();
     return originalRenderActiveTab(tab);
   };
 })();
