@@ -285,7 +285,7 @@
       const score=questions.reduce((sum,q,i)=>sum+(Number(data.get("q"+i))===q[2]?1:0),0);
       const feedback=questions.map((q,i)=>{
         const chosen=Number(data.get("q"+i)),ok=chosen===q[2];
-        return {ok,title:(i+1)+". "+q[0],detail:ok?"Верно. "+explainQuizQuestion(q[0],q[q[2]+1]||q[1][q[2]]):"Твой ответ: "+q[1][chosen]+". Правильный ответ: "+q[1][q[2]]+". Почему: "+explainQuizQuestion(q[0],q[1][q[2]])};
+        return {ok,title:(i+1)+". "+q[0],detail:ok?"Верно. "+explainQuizQuestion(q[0],q[1][q[2]]):"Твой ответ: "+q[1][chosen]+". Правильный ответ: "+q[1][q[2]]+". Почему: "+explainQuizQuestion(q[0],q[1][q[2]])};
       });
       recordGame("Финансовый квиз","quiz",questions.length-score,questions.length);
       showGameFeedback("Результат: "+score+"/"+questions.length+" · правильные ответы и объяснения",feedback);
