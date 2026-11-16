@@ -244,3 +244,4 @@ app.use(express.static(staticRoot));
 app.listen(PORT, () => {
   console.log(`[My Way] Сервер запущен: http://localhost:${PORT}`);
 });
+
