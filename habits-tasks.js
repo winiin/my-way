@@ -237,12 +237,11 @@
     badge.textContent = "✦ " + (Number(DATA.coins) || 0);
   };
 
-  const originalRenderActiveTab = renderActiveTab;
-  renderActiveTab = function(tab) {
-    if (tab === "habits") return renderHabitsTab();
-    if (tab === "tasks") return renderTasksTab();
-    if (tab === "games") return renderGamesTab();
-    if (tab === "learning") return renderLearningTab();
-    return originalRenderActiveTab(tab);
+  // Expose tab renderers explicitly; app.js routes navigation to these methods.
+  window.MYWAY_GUEST_TABS = {
+    habits: renderHabitsTab,
+    tasks: renderTasksTab,
+    games: renderGamesTab,
+    learning: renderLearningTab
   };
 })();
