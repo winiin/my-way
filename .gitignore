@@ -1,0 +1,9 @@
+node_modules/
+myway.db
+myway.db-shm
+myway.db-wal
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
