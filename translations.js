@@ -137,6 +137,7 @@
     while (walker.nextNode()) nodes.push(walker.currentNode);
     nodes.forEach(node => {
       if (!node.nodeValue.trim()) return;
+      if (node.parentElement && node.parentElement.closest("script,style,noscript,textarea,input,pre,code")) return;
       const next = translate(node.nodeValue, lang);
       if (next !== node.nodeValue) node.nodeValue = next;
     });
