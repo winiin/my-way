@@ -143,8 +143,14 @@
     document.getElementById("gfStartGoal").addEventListener("click", startGoal);
   }
 
-  function recordGame(name) {
-    DATA.guestGameResults.push({name:name,xp:30,coins:5,date:Date.now()});
+  function recordGame(name, gameKey) {
+    const day = today();
+    if (DATA.guestGameResults.some(r => r.gameKey === gameKey && r.day === day)) {
+      if (typeof notify === "function") notify("Награда за эту игру уже получена сегодня. Можно играть дальше ради практики!", "info");
+      renderGamesTab();
+      return;
+    }
+    DATA.guestGameResults.push({name:name,gameKey:gameKey,day:day,xp:30,coins:5,date:Date.now()});
     DATA.guestGameResults = DATA.guestGameResults.slice(-20);
     reward(30,5,"Игра завершена");
     renderGamesTab();
@@ -161,7 +167,7 @@
       e.preventDefault();
       const data = new FormData(e.currentTarget);
       const score = quiz.reduce((sum,q,i) => sum + (Number(data.get("q"+i)) === q[2] ? 1 : 0),0);
-      if (score >= 3) recordGame("Финансовый квиз");
+      if (score >= 3) recordGame("Финансовый квиз","quiz");
       else if (typeof notify === "function") notify("Правильных ответов: " + score + "/4. Попробуй ещё раз.", "info");
     });
   }
@@ -181,7 +187,7 @@
         if (typeof notify === "function") notify("Сумма должна быть ровно 100 000 ₸, накопления — не меньше 10 000 ₸.", "error");
         return;
       }
-      recordGame("Собери бюджет");
+      recordGame("Собери бюджет","budget");
     });
     area.scrollIntoView({behavior:"smooth",block:"start"});
   }
@@ -199,7 +205,7 @@
         if (typeof notify === "function") notify("Отметь все три шага.", "info");
         return;
       }
-      recordGame("План финансовой цели");
+      recordGame("План финансовой цели","goal");
     });
     area.scrollIntoView({behavior:"smooth",block:"start"});
   }
