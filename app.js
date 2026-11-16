@@ -47,8 +47,6 @@ const L = {
     export:'Экспорт', exportDone:'Отчёт сохранён',
     quickActs:'Быстрые действия', lastOps:'Последние операции',
     activeGoal:'Активная цель', noActiveGoal:'Нет активной цели',
-    premTitle:'Премиум функция', premDesc:'Эта функция доступна после 1 месяца использования или при оформлении подписки.',
-    premBtn:'Оформить подписку — 990 ₸/мес',
     passRules:'Требования: мин. 8 символов, 1 заглавная, 1 строчная, 1 цифра, 1 спецсимвол',
     passWeak:'Пароль не соответствует требованиям',
     userNotFound:'Пользователь не найден', wrongPass:'Неверный пароль',
@@ -102,8 +100,6 @@ const L = {
     export:'Экспорт', exportDone:'Есеп сақталды',
     quickActs:'Жылдам әрекеттер', lastOps:'Соңғы операциялар',
     activeGoal:'Белсенді мақсат', noActiveGoal:'Белсенді мақсат жоқ',
-    premTitle:'Премиум функция', premDesc:'Бұл функция 1 ай пайдаланғаннан кейін немесе жазылым рәсімдегенде қол жетімді.',
-    premBtn:'Жазылым рәсімдеу — 990 ₸/ай',
     passRules:'Талаптар: мін. 8 таңба, 1 бас, 1 кіші, 1 сан, 1 арнайы таңба',
     passWeak:'Құпия сөз талаптарға сай емес',
     userNotFound:'Пайдаланушы табылмады', wrongPass:'Қате құпия сөз',
@@ -157,8 +153,6 @@ const L = {
     export:'Export', exportDone:'Report saved',
     quickActs:'Quick actions', lastOps:'Recent transactions',
     activeGoal:'Active goal', noActiveGoal:'No active goal',
-    premTitle:'Premium feature', premDesc:'This feature is available after 1 month of use or with a subscription.',
-    premBtn:'Subscribe — 990 ₸/month',
     passRules:'Requirements: min. 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char',
     passWeak:'Password does not meet requirements',
     userNotFound:'User not found', wrongPass:'Wrong password',
@@ -1121,7 +1115,6 @@ function renderHeader() {
       <select class="sel" id="curSel">${curOpts}</select>
       <span class="badge b-green"><i class="fas fa-heartbeat"></i> ${health}%</span>
       <span class="badge b-gold"><i class="fas fa-star"></i> Lv.${DATA.level}</span>
-      <span class="badge" style="background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.2);cursor:pointer;" title="Дней бесплатного периода осталось" onclick="showPaywall()">🎁 ${trialDaysLeft()} дн. Free</span>
       <button class="theme-btn" id="themeBtn"><i class="fas fa-${DARK?'sun':'moon'}"></i></button>
     </div>`;
 
@@ -1154,15 +1147,6 @@ function initMobileToggle() {
 }
 
 function renderActiveTab(tab) {
-  // All features free for 30 calendar days from registration date
-  // After 30 days: AI, Stats, Import, Credits require Premium
-  if (!isTrialActive() && !isPremium()) {
-    const premiumOnlyTabs = ['ai','stats','import','credits'];
-    if (premiumOnlyTabs.includes(tab)) {
-      showPaywall();
-      // Also render a locked version so user sees what's behind paywall
-    }
-  }
   const fns={dashboard:renderDashboard,transactions:renderTxTab,cards:renderCardsTab,
     deposits:renderDepositsTab,stats:renderStatsTab,goals:renderGoalsTab,
     gamification:renderGamTab,ai:renderAITab,tips:renderTipsTab,import:renderImportTab,
@@ -1195,7 +1179,7 @@ function showProfile() {
       <div class="prof-av">${CUR_USER.avatar}</div>
       <div style="font-size:17px;font-weight:700;">${CUR_USER.name}</div>
       <div style="font-size:12px;color:var(--tx3);">${CUR_USER.email}</div>
-      <div style="font-size:11px;color:var(--tx3);margin-top:3px;">День ${joinDays}${isPremium()?'  ⭐ Премиум':''}</div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:3px;">День ${joinDays}</div>
     </div>
     <div class="prof-stats">
       <div class="pstat"><span class="pstat-v">${DATA.transactions.length}</span><div class="pstat-l">${t('allOps')}</div></div>
@@ -1208,25 +1192,6 @@ function showProfile() {
       <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="color:var(--tx3);">Ранг</span><strong style="color:var(--gold);">🏅 ${DATA.rank}</strong></div>
       <div style="display:flex;justify-content:space-between;"><span style="color:var(--tx3);">XP</span><strong style="color:var(--acc2);">${DATA.xp} XP</strong></div>
     </div>
-    ${isPremium()?`
-    <div style="margin-top:12px;padding:12px;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(16,185,129,.04));border:1px solid rgba(16,185,129,.3);border-radius:var(--r);">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:16px;">⭐</span><strong style="font-size:13px;">Premium активен</strong><span style="margin-left:auto;font-size:10px;color:var(--green);background:var(--gd);padding:2px 8px;border-radius:20px;">${DATA.premiumPlan==='yearly'?'Годовой':'Месячный'}</span></div>
-      <div style="font-size:11px;color:var(--tx3);">Действует до: ${getSubscriptionStatus().expiry||'—'}</div>
-      <div style="font-size:11px;color:var(--tx3);margin-top:2px;">Карта: •••• ${DATA.savedCard?.last4||'—'}</div>
-      <button class="btn btn-ghost btn-sm wf" onclick="document.getElementById('profileModal').remove();showPaywall()" style="margin-top:8px;justify-content:center;font-size:11px;">Управление подпиской</button>
-    </div>`:
-    isTrialActive()?`
-    <div style="margin-top:12px;padding:12px;background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(6,182,212,.06));border:1px solid rgba(124,58,237,.25);border-radius:var(--r);text-align:center;">
-      <div style="font-size:12px;color:var(--acc2);font-weight:700;margin-bottom:4px;">🎁 Бесплатный период</div>
-      <div style="font-size:22px;font-weight:800;color:var(--acc2);margin:4px 0;">${trialDaysLeft()}</div>
-      <div style="font-size:11px;color:var(--tx3);margin-bottom:10px;">дней осталось</div>
-      <button class="btn btn-primary wf" style="font-size:12px;justify-content:center;" onclick="document.getElementById('profileModal').remove();showPaywall()">Оформить Premium</button>
-    </div>`:`
-    <div style="margin-top:12px;padding:12px;background:var(--rd);border:1px solid rgba(244,63,94,.3);border-radius:var(--r);text-align:center;">
-      <div style="font-size:12px;color:var(--red);font-weight:700;margin-bottom:6px;">⏰ Пробный период завершён</div>
-      <div style="font-size:11px;color:var(--tx2);margin-bottom:10px;">Оформите подписку для доступа ко всем функциям</div>
-      <button class="btn btn-primary wf" style="font-size:12px;justify-content:center;" onclick="document.getElementById('profileModal').remove();showPaywall()"><i class="fas fa-star"></i> Оформить от 3 500 ₸/мес</button>
-    </div>`}
     <div style="margin-top:12px;padding:12px;background:var(--bg3);border-radius:var(--r);">
       <div style="font-size:11px;font-weight:700;color:var(--tx3);margin-bottom:6px;">🔑 API ключ для ИИ-функций</div>
       <div style="display:flex;gap:6px;">
@@ -1547,12 +1512,6 @@ function renderDashboard() {
             <span style="color:var(--red);"><i class="fas fa-arrow-down"></i> ${fmtAmt(exp)}</span>
           </div>
           <div style="margin-top:6px;font-size:11px;color:${savePct>=20?'var(--green)':savePct>=0?'var(--tx2)':'var(--red)'};">${t('savingsRate')}: ${savePct}%</div>
-          ${!isPremium()&&isTrialActive()?`<div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--green);cursor:pointer;" onclick="showPaywall()">
-            <i class="fas fa-hourglass-half"></i> ${trialDaysLeft()} дней бесплатно осталось
-          </div>`:''}
-          ${!isPremium()&&!isTrialActive()?`<div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;background:var(--rd);border:1px solid rgba(244,63,94,.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--red);cursor:pointer;" onclick="showPaywall()">
-            <i class="fas fa-lock"></i> Пробный период истёк — оформить Premium
-          </div>`:''}
         </div>
       </div>
       <div class="card">
