@@ -792,6 +792,10 @@ function parseTx(text) {
 function addTx(raw, cardId=null) {
   const p=parseTx(raw);
   if(!p){alert(t('txTitle')+': "Кофе 350"');return false;}
+  const enteredCurrency = CUR[CUR_KEY] || CUR.KZT;
+  p.originalAmount = p.amount;
+  p.currency = CUR_KEY;
+  p.amount = Math.round(p.amount / enteredCurrency.rate);
   p.id=DATA.nextId++; p.cardId=cardId; p.category=p.cat; delete p.cat;
   DATA.transactions.push(p);
   DATA.xp+=5;
@@ -1578,8 +1582,8 @@ function renderDashboard() {
     </div>`;
   }).join('')||`<div style="text-align:center;padding:20px;color:var(--tx3);">${t('noTx')}</div>`;
 
-  document.getElementById('qInc').addEventListener('click',()=>{const v=prompt(t('income')+' (₸):');if(v&&parseInt(v)>0)addTx(`Доход ${parseInt(v)}`);});
-  document.getElementById('qExp').addEventListener('click',()=>{const v=prompt(t('expense')+' (₸):');if(v&&parseInt(v)>0)addTx(`Расход ${parseInt(v)}`);});
+  document.getElementById('qInc').addEventListener('click',()=>{const v=prompt(t('income')+` (${(CUR[CUR_KEY]||CUR.KZT).sym}):`);if(v&&parseFloat(v)>0)addTx(`Доход ${parseFloat(v)}`);});
+  document.getElementById('qExp').addEventListener('click',()=>{const v=prompt(t('expense')+` (${(CUR[CUR_KEY]||CUR.KZT).sym}):`);if(v&&parseFloat(v)>0)addTx(`Расход ${parseFloat(v)}`);});
   document.getElementById('qCard').addEventListener('click',()=>{document.querySelector('[data-tab="cards"]').click();});
   document.getElementById('qTransfer').addEventListener('click', showTransferModal);
   document.getElementById('qExp2').addEventListener('click',exportReport);
@@ -1614,7 +1618,7 @@ function renderTxTab() {
           <input class="finput wf" type="text" id="txName" placeholder="Например: Обед в кафе"/>
         </div>
         <div class="fgrp" style="margin:0;">
-          <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);display:block;margin-bottom:5px;">Сумма (₸)</label>
+          <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);display:block;margin-bottom:5px;">${LANG==='kz'?'Сома':LANG==='en'?'Amount':'Сумма'} (${(CUR[CUR_KEY]||CUR.KZT).sym})</label>
           <input class="finput wf" type="number" id="txAmount" placeholder="0" min="1"/>
         </div>
         <div class="fgrp" style="margin:0;">
@@ -1722,12 +1726,17 @@ function renderTxTab() {
     const cardEl = document.getElementById('txCardSel');
     const cid    = cardEl && cardEl.value ? parseInt(cardEl.value) : null;
 
-    if(!amount || amount <= 0){ alert('Введите сумму больше 0'); return; }
+    if(!amount || amount <= 0){ alert(LANG==='kz'?'0-ден үлкен соманы енгізіңіз':LANG==='en'?'Enter an amount greater than 0':'Введите сумму больше 0'); return; }
 
+    // Store all transaction amounts in KZT, converting from the selected display currency.
+    const enteredCurrency = CUR[CUR_KEY] || CUR.KZT;
+    const amountKzt = Math.round(amount / enteredCurrency.rate);
     const tx = {
       id: DATA.nextId++,
       text: name,
-      amount: Math.round(amount),
+      amount: amountKzt,
+      originalAmount: amount,
+      currency: CUR_KEY,
       type: txType,
       category: cat,
       date: Date.now(),
