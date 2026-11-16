@@ -56,3 +56,20 @@
 @media(max-width:480px){.gf-intro{display:block}.gf-stat{display:inline-block;margin-top:12px}.gf-item{align-items:flex-start}.gf-item-actions{flex-direction:column;align-items:flex-end}.gf-inline-form .btn,.gf-task-form .btn{width:100%;justify-content:center}}
 
 .gf-coming{display:inline-block;margin-top:8px;padding:4px 9px;border:1px solid var(--brd2);border-radius:20px;color:var(--tx3);font-size:9px;font-weight:800;letter-spacing:1px}
+
+/* Reward shop and unlockable profile themes */
+.gf-shop-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.gf-shop-card{padding:15px;display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center}
+.gf-shop-info p{font-size:11px;color:var(--tx2);margin:5px 0}
+.gf-shop-info small{font-size:10px;color:var(--tx3)}
+.gf-shop-card button{grid-column:1/-1;width:100%;justify-content:center}
+.gf-shop-preview{height:58px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:var(--bg3);border:1px solid var(--brd2)}
+.gf-preview-aurora{background:linear-gradient(135deg,#182c55,#5b4b9b,#36a6a6)}
+.gf-preview-ocean{background:linear-gradient(135deg,#063b55,#087e8b,#63c7c2)}
+.gf-preview-sunset{background:linear-gradient(135deg,#713b58,#d97757,#f4c36a)}
+.gf-preview-rose{background:linear-gradient(135deg,#593d69,#b879a5,#f0b6c9)}
+html[data-gf-skin="aurora"]{--acc:#6d72e8;--acc2:#a6a9ff;--accg:rgba(109,114,232,.16)}
+html[data-gf-skin="ocean"]{--acc:#078b9b;--acc2:#40c5cf;--accg:rgba(7,139,155,.16)}
+html[data-gf-skin="sunset"]{--acc:#d97757;--acc2:#f0a36e;--accg:rgba(217,119,87,.16)}
+html[data-gf-skin="rose"]{--acc:#b879a5;--acc2:#e2a9ce;--accg:rgba(184,121,165,.16)}
+@media(max-width:650px){.gf-shop-grid{grid-template-columns:1fr}}
