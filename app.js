@@ -754,11 +754,11 @@ function showApp() {
 // ── TRANSACTION PARSER ─────────────────
 function parseTx(text) {
   text=text.trim();
-  const nums=text.match(/\d[\d\s]*/g);
+  const nums=text.match(/\d[\d\s]*(?:[.,]\d{1,2})?/g);
   if(!nums) return null;
-  const amount=parseInt(nums[0].replace(/\s/g,''));
+  const amount=parseFloat(nums[0].replace(/\s/g,'').replace(',','.'));
   if(isNaN(amount)||amount<=0) return null;
-  let desc=text.replace(/\d[\d\s]*/g,'').trim()||'Покупка';
+  let desc=text.replace(/\d[\d\s]*(?:[.,]\d{1,2})?/g,'').trim()||'Покупка';
   const low=desc.toLowerCase();
   const incKW=['зарплат','salary','жалақы','доход','income','табыс','премия','аванс','кешбэк','cashback','возврат','refund','пришло','стипендия','stipend','перевод от','transfer from'];
   let type='expense', cat='Прочее';
