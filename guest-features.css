@@ -1,0 +1,56 @@
+/* Guest-mode additions: habits, tasks and mini-games */
+.gf-intro{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:4px 0 18px}
+.gf-intro h2{font-size:clamp(22px,3vw,30px);margin:4px 0 6px}
+.gf-intro p{color:var(--tx2);font-size:13px;line-height:1.6}
+.gf-eyebrow{font-size:10px;letter-spacing:1.5px;font-weight:800;color:var(--acc2)}
+.gf-stat{min-width:112px;padding:13px 16px;border:1px solid var(--brd2);border-radius:14px;background:var(--bg2);text-align:center}
+.gf-stat strong,.gf-stat span{display:block}
+.gf-stat strong{font-size:22px;color:var(--acc2)}
+.gf-stat span{font-size:10px;color:var(--tx3);margin-top:3px}
+.gf-form-card{margin-bottom:14px;padding:16px}
+.gf-inline-form,.gf-task-form{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gf-inline-form .finput{flex:1;min-width:190px}
+.gf-task-form .finput{flex:1;min-width:150px}
+.gf-list{display:grid;gap:10px}
+.gf-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px}
+.gf-item-main{display:flex;align-items:center;gap:12px;min-width:0}
+.gf-item-main>div:last-child{min-width:0}
+.gf-item-main strong,.gf-item-main small{display:block}
+.gf-item-main strong{font-size:13px;overflow-wrap:anywhere}
+.gf-item-main small{font-size:11px;color:var(--tx3);margin-top:4px}
+.gf-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:11px;background:var(--accg);color:var(--acc2);font-weight:800}
+.gf-item-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.gf-delete{width:30px;height:30px;border:1px solid var(--brd2);border-radius:9px;background:transparent;color:var(--tx3);font-size:19px;cursor:pointer}
+.gf-delete:hover{color:var(--red);border-color:var(--red)}
+.gf-empty{display:grid;justify-items:center;gap:7px;padding:30px 18px;text-align:center}
+.gf-empty>div{font-size:28px}
+.gf-empty strong{font-size:14px}
+.gf-empty span{font-size:12px;color:var(--tx3)}
+.gf-priority{width:9px;height:9px;border-radius:50%;background:var(--gold);flex:0 0 9px}
+.gf-priority-high{background:var(--red)}
+.gf-priority-low{background:var(--green)}
+.gf-item-done{opacity:.68}
+.gf-item-done strong{text-decoration:line-through}
+.gf-completed-label{margin:18px 2px 8px;color:var(--tx3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.gf-game-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.gf-game-card{padding:18px;display:flex;flex-direction:column;align-items:flex-start;min-height:210px}
+.gf-game-icon{font-size:30px;margin-bottom:12px}
+.gf-game-card h3{font-size:15px;margin-bottom:7px}
+.gf-game-card p{font-size:12px;line-height:1.55;color:var(--tx2);flex:1;margin-bottom:15px}
+.gf-game-play{margin-top:16px;padding:18px}
+.gf-game-play h3{font-size:18px;margin-bottom:8px}
+.gf-game-play p{font-size:12px;color:var(--tx2);line-height:1.6;margin-bottom:14px}
+.gf-game-play fieldset{border:1px solid var(--brd2);border-radius:12px;padding:12px;margin:10px 0}
+.gf-game-play legend{padding:0 5px;font-size:13px;font-weight:700}
+.gf-answer{display:flex;align-items:flex-start;gap:9px;padding:9px 7px;font-size:12px;color:var(--tx2);cursor:pointer}
+.gf-answer input{margin-top:2px;accent-color:var(--acc)}
+.gf-game-play form>.btn{margin-top:12px}
+.gf-budget-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.gf-budget-form label{display:grid;gap:6px;font-size:12px;color:var(--tx2)}
+.gf-budget-form .finput{width:100%}
+.gf-game-history{margin-top:16px;padding:16px}
+.gf-game-history>strong{display:block;margin-bottom:10px;font-size:13px}
+.gf-game-history>div{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--brd);font-size:12px}
+.gf-game-history b{color:var(--green);white-space:nowrap}
+@media(max-width:760px){.gf-game-grid{grid-template-columns:1fr}.gf-game-card{min-height:0}.gf-intro{align-items:flex-start}.gf-stat{min-width:90px}.gf-budget-form{grid-template-columns:1fr}}
+@media(max-width:480px){.gf-intro{display:block}.gf-stat{display:inline-block;margin-top:12px}.gf-item{align-items:flex-start}.gf-item-actions{flex-direction:column;align-items:flex-end}.gf-inline-form .btn,.gf-task-form .btn{width:100%;justify-content:center}}
