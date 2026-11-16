@@ -79,3 +79,11 @@ html[data-gf-skin="rose"]{--acc:#b879a5;--acc2:#e2a9ce;--accg:rgba(184,121,165,.
 .gf-difficulty{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 18px;padding:14px 16px;border:1px solid var(--brd);border-radius:14px;background:var(--bg2)}
 .gf-difficulty-options{display:flex;gap:8px;flex-wrap:wrap}
 .gf-difficulty-options .btn{white-space:nowrap}
+
+.gf-game-feedback{margin-top:14px;padding:18px}
+.gf-game-feedback h3{font-size:16px;margin-bottom:12px}
+.gf-feedback-row{padding:11px 12px;margin:8px 0;border:1px solid var(--brd2);border-radius:10px;background:var(--bg2)}
+.gf-feedback-row strong{font-size:12px}
+.gf-feedback-row p{font-size:12px;color:var(--tx2);line-height:1.55;margin-top:5px}
+.gf-feedback-row.is-correct{border-left:3px solid var(--green)}
+.gf-feedback-row.is-wrong{border-left:3px solid var(--red)}
