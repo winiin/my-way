@@ -605,35 +605,123 @@ function getSubscriptionStatus() {
 
 // ── AUTH ────────────────────────────────
 async function initAuth() {
-  // TEMPORARY GUEST MODE:
-  // no registration, no login, no /api/me or authenticated API requests.
-  // Guest data is saved in localStorage under one stable local profile.
-  const email = 'guest@myway.local';
+  initAuthUI();
+
+  // Restore a previously signed-in local account on this browser.
+  const email = getSession();
   const accounts = getAccounts();
 
-  if(!accounts[email]){
-    const data = defaultData();
-    data.lang = localStorage.getItem('mw_lang') || 'ru';
-    data.trialStart = Date.now();
-    accounts[email] = {
-      name: 'Гость',
+  if(email && email !== 'guest@myway.local' && accounts[email]) {
+    const account = accounts[email];
+    setToken(null);
+    CUR_USER = {
+      name: account.name || email.split('@')[0],
       email,
-      data,
-      joinedAt: Date.now()
+      avatar: (account.name || email).charAt(0).toUpperCase()
     };
-    saveAccounts(accounts);
+    await loadData();
+    showApp();
+    return;
   }
 
-  CUR_USER = {
-    name: 'Гость',
-    email,
-    avatar: 'Г',
-    isGuest: true
-  };
+  // A server session can be restored when the app is hosted with its API.
+  if(email && getToken()) {
+    try {
+      const me = await apiFetch('/me');
+      CUR_USER = {
+        name: me.name || email.split('@')[0],
+        email: me.email || email,
+        avatar: (me.name || email).charAt(0).toUpperCase()
+      };
+      await loadData();
+      showApp();
+      return;
+    } catch(e) {
+      setToken(null);
+    }
+  }
 
-  setSession(email);
-  await loadData();
-  showApp();
+  setSession(null);
+  document.getElementById('authScreen')?.classList.remove('hidden');
+  document.getElementById('app')?.classList.add('hidden');
+  document.getElementById('aiChat')?.classList.add('hidden');
+  updateAuthLang();
+}
+
+function initAuthUI() {
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  if(!loginForm || !registerForm || document.body.dataset.authBound === '1') return;
+  document.body.dataset.authBound = '1';
+
+  document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const isRegister = tab.dataset.auth === 'register';
+      document.querySelectorAll('.auth-tab').forEach(x => x.classList.toggle('active', x === tab));
+      loginForm.classList.toggle('hidden', isRegister);
+      registerForm.classList.toggle('hidden', !isRegister);
+      document.getElementById('loginError')?.classList.add('hidden');
+      document.getElementById('registerError')?.classList.add('hidden');
+      document.getElementById('loginSuccess')?.classList.add('hidden');
+      document.getElementById('registerSuccess')?.classList.add('hidden');
+    });
+  });
+
+  document.getElementById('loginBtn')?.addEventListener('click', doLogin);
+  document.getElementById('registerBtn')?.addEventListener('click', doRegister);
+  loginForm.addEventListener('submit', e => { e.preventDefault(); doLogin(); });
+  registerForm.addEventListener('submit', e => { e.preventDefault(); doRegister(); });
+
+  document.getElementById('forgotPassLink')?.addEventListener('click', e => {
+    e.preventDefault();
+    showForgotPasswordModal();
+  });
+
+  document.getElementById('eyeBtn')?.addEventListener('click', () => {
+    const input = document.getElementById('regPassword');
+    if(!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+    const icon = document.querySelector('#eyeBtn i');
+    if(icon) icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+  });
+
+  document.querySelectorAll('.lang-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      LANG = pill.dataset.l || 'ru';
+      localStorage.setItem('mw_lang', LANG);
+      document.querySelectorAll('.lang-pill').forEach(x => x.classList.toggle('active', x === pill));
+      updateAuthLang();
+    });
+  });
+
+  const passwordInput = document.getElementById('regPassword');
+  passwordInput?.addEventListener('input', () => {
+    const p = passwordInput.value;
+    const checks = {
+      'pr-len': p.length >= 8,
+      'pr-upper': /[A-Z]/.test(p),
+      'pr-lower': /[a-z]/.test(p),
+      'pr-num': /[0-9]/.test(p),
+      'pr-spec': /[!@#$%^&*()\\-_+=\[\]{}|;:,.<>?]/.test(p)
+    };
+    Object.entries(checks).forEach(([id, ok]) => {
+      const el = document.getElementById(id);
+      if(el) el.classList.toggle('valid', ok);
+    });
+  });
+}
+
+function showAuth() {
+  CUR_USER = null;
+  setSession(null);
+  setToken(null);
+  document.getElementById('authScreen')?.classList.remove('hidden');
+  document.getElementById('app')?.classList.add('hidden');
+  document.getElementById('aiChat')?.classList.add('hidden');
+  document.querySelector('[data-auth="login"]')?.click();
+  const pass = document.getElementById('loginPassword');
+  if(pass) pass.value = '';
+  updateAuthLang();
 }
 
 function updateAuthLang() {
@@ -736,8 +824,9 @@ async function doRegister() {
 }
 
 function doLogout() {
-  // Authentication is intentionally disabled during the current guest-mode phase.
-  notify('Сейчас MY WAY работает в гостевом режиме. Данные сохраняются в этом браузере.', 'success');
+  setSession(null);
+  setToken(null);
+  showAuth();
 }
 
 function showApp() {
