@@ -325,7 +325,7 @@ function showForgotPasswordModal() {
     const btn=document.getElementById('fpSendBtn');
     btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Отправка...';
     sendResetCodeEmail(email, code).then(sent=>{
-      btn.disabled=false; btn.innerHTML='<i class="fas fa-paper-plane"></i> Отправить код на email';
+      btn.disabled=false; btn.innerHTML='<i class="fas fa-key"></i> Получить код';
       document.getElementById('fpStep1').classList.add('hidden');
       document.getElementById('fpStep2').classList.remove('hidden');
       document.getElementById('fpStep2').dataset.email=email;
@@ -701,7 +701,7 @@ function initAuthUI() {
       'pr-upper': /[A-Z]/.test(p),
       'pr-lower': /[a-z]/.test(p),
       'pr-num': /[0-9]/.test(p),
-      'pr-spec': /[!@#$%^&*()\\-_+=\[\]{}|;:,.<>?]/.test(p)
+      'pr-spec': /[!@#$%^&*()\-_+=\[\]{}|;:,.<>?]/.test(p)
     };
     Object.entries(checks).forEach(([id, ok]) => {
       const el = document.getElementById(id);
