@@ -9,7 +9,7 @@ const L = {
     login:'Войти', register:'Регистрация',
     loginBtn:'Войти', registerBtn:'Создать аккаунт',
     emailPh:'Email', passPh:'Пароль', namePh:'Ваше имя', passPh2:'Пароль',
-    demo:'Демо: demo@myway.kz / Demo@123!',
+    demo:'Демо-аккаунта нет. Создайте свой профиль.',
     nav:{dashboard:'Дашборд',transactions:'Транзакции',cards:'Карты',deposits:'Депозиты',stats:'Статистика',goals:'Цели',gamification:'Игра',ai:'ИИ-советник',tips:'Советы мудрецов',import:'Импорт PDF',credits:'Кредиты'},
     balance:'Баланс', income:'Доходы', expense:'Расходы',
     txTitle:'Добавить операцию', txPh:'"Кофе 350" или "Зарплата 200000"',
@@ -62,7 +62,7 @@ const L = {
     login:'Кіру', register:'Тіркелу',
     loginBtn:'Кіру', registerBtn:'Аккаунт жасау',
     emailPh:'Email', passPh:'Құпия сөз', namePh:'Атыңыз', passPh2:'Құпия сөз',
-    demo:'Демо: demo@myway.kz / Demo@123!',
+    demo:'Демо-аккаунта нет. Создайте свой профиль.',
     nav:{dashboard:'Басты',transactions:'Операциялар',cards:'Карталар',deposits:'Депозиттер',stats:'Статистика',goals:'Мақсаттар',gamification:'Ойын',ai:'ЖИ-кеңесші',tips:'Данышпандар кеңесі',import:'Импорт PDF',credits:'Кредиттер'},
     balance:'Баланс', income:'Кірістер', expense:'Шығыстар',
     txTitle:'Операция қосу', txPh:'"Кофе 350" немесе "Жалақы 200000"',
@@ -115,7 +115,7 @@ const L = {
     login:'Login', register:'Register',
     loginBtn:'Login', registerBtn:'Create account',
     emailPh:'Email', passPh:'Password', namePh:'Your name', passPh2:'Password',
-    demo:'Demo: demo@myway.kz / Demo@123!',
+    demo:'No demo account. Please create your own.',
     nav:{dashboard:'Dashboard',transactions:'Transactions',cards:'Cards',deposits:'Deposits',stats:'Statistics',goals:'Goals',gamification:'Game',ai:'AI Advisor',tips:'Wisdom Tips',import:'PDF Import',credits:'Credits'},
     balance:'Balance', income:'Income', expense:'Expenses',
     txTitle:'Add transaction', txPh:'"Coffee 350" or "Salary 200000"',
@@ -289,7 +289,7 @@ function showForgotPasswordModal() {
         <input class="finput wf" type="email" id="fpEmail" placeholder="you@example.com"/>
       </div>
       <div id="fpError1" class="auth-error hidden" style="margin-bottom:10px;"></div>
-      <button class="btn btn-primary wf" id="fpSendBtn"><i class="fas fa-paper-plane"></i> Отправить код на email</button>
+      <button class="btn btn-primary wf" id="fpSendBtn"><i class="fas fa-key"></i> Получить код</button>
     </div>
     <div id="fpStep2" class="hidden">
       <div id="fpNotice" style="font-size:12px;color:var(--tx2);background:var(--bg3);border:1px solid var(--brd2);border-radius:var(--rsm);padding:10px 12px;margin-bottom:14px;line-height:1.5;"></div>
@@ -299,7 +299,7 @@ function showForgotPasswordModal() {
       </div>
       <div class="fgrp">
         <label>Новый пароль</label>
-        <input class="finput wf" type="password" id="fpPass1" placeholder="Минимум 6 символов"/>
+        <input class="finput wf" type="password" id="fpPass1" placeholder="Минимум 8 символов"/>
       </div>
       <div class="fgrp">
         <label>Повторите новый пароль</label>
@@ -307,7 +307,7 @@ function showForgotPasswordModal() {
       </div>
       <div id="fpError2" class="auth-error hidden" style="margin-bottom:10px;"></div>
       <button class="btn btn-primary wf" id="fpSaveBtn" style="margin-bottom:8px;"><i class="fas fa-check"></i> Сохранить новый пароль</button>
-      <button class="btn btn-outline wf" id="fpResendBtn">Отправить код ещё раз</button>
+      <button class="btn btn-outline wf" id="fpResendBtn">Получить новый код</button>
     </div>
   </div>`;
   document.body.appendChild(m);
@@ -333,7 +333,7 @@ function showForgotPasswordModal() {
       if(sent){
         notice.innerHTML=`✅ Код отправлен на <b>${email}</b>. Проверьте почту (и папку «Спам») — код действует 10 минут.`;
       } else {
-        notice.innerHTML=`⚠️ Реальная отправка email пока не настроена (демо-режим). Ваш код: <b style="font-size:16px;letter-spacing:2px;">${code}</b><br><span style="color:var(--tx3);">Чтобы коды приходили на настоящую почту, добавьте свои данные EmailJS в EMAILJS_CONFIG в app.js.</span>`;
+        notice.innerHTML=`⚠️ Письмо не отправлено: EmailJS не настроен. Тестовый код (действует 10 минут): <b style="font-size:16px;letter-spacing:2px;">${code}</b><br><span style="color:var(--tx3);">Чтобы коды приходили на настоящую почту, добавьте свои данные EmailJS в EMAILJS_CONFIG в app.js.</span>`;
       }
     });
   }
@@ -404,7 +404,7 @@ function saveAccounts(a) {
 // сервере, SQLite). Если бэкенда нет — приложение прозрачно откатывается
 // на локальный режим (localStorage), ничего не ломая. Это НЕ то же самое,
 // что "фича облегчённого режима" — это ограничение MVP.
-const API_BASE = '/api';
+const API_BASE = window.location.hostname.endsWith('github.io') ? null : '/api';
 
 function getToken() {
   try{ return localStorage.getItem('mw_token')||null; } catch{ return null; }
@@ -414,6 +414,7 @@ function setToken(tok) {
 }
 
 async function apiFetch(path, opts={}) {
+  if(!API_BASE) throw new Error('Сервер API не подключён к статическому GitHub Pages');
   const headers = Object.assign({'Content-Type':'application/json'}, opts.headers||{});
   const token = getToken();
   if(token) headers['Authorization'] = 'Bearer '+token;
@@ -476,7 +477,7 @@ function saveData() {
     }
   }catch{}
 
-  if(CUR_USER.isGuest) return;
+  if(CUR_USER.isGuest || !API_BASE) return;
 
   clearTimeout(_saveDebounce);
   _saveDebounce = setTimeout(()=>{
@@ -493,7 +494,7 @@ async function loadData() {
   if(!CUR_USER) return;
 
   let serverData = null;
-  if(!CUR_USER.isGuest){
+  if(!CUR_USER.isGuest && API_BASE){
     try{
       const res = await apiFetch('/data');
       serverData = res.data;
@@ -625,7 +626,7 @@ async function initAuth() {
   }
 
   // A server session can be restored when the app is hosted with its API.
-  if(email && getToken()) {
+  if(email && getToken() && API_BASE) {
     try {
       const me = await apiFetch('/me');
       CUR_USER = {
@@ -667,8 +668,6 @@ function initAuthUI() {
     });
   });
 
-  document.getElementById('loginBtn')?.addEventListener('click', doLogin);
-  document.getElementById('registerBtn')?.addEventListener('click', doRegister);
   loginForm.addEventListener('submit', e => { e.preventDefault(); doLogin(); });
   registerForm.addEventListener('submit', e => { e.preventDefault(); doRegister(); });
 
@@ -706,7 +705,7 @@ function initAuthUI() {
     };
     Object.entries(checks).forEach(([id, ok]) => {
       const el = document.getElementById(id);
-      if(el) el.classList.toggle('valid', ok);
+      if(el) el.classList.toggle('ok', ok);
     });
   });
 }
@@ -763,8 +762,8 @@ async function doLogin() {
   const pass=document.getElementById('loginPassword').value;
   if(!email||!pass){showErr('loginError',t('fillAll'));return;}
 
-  // 1) Пробуем настоящий бэкенд (bcrypt-проверка на сервере, JWT-токен)
-  try {
+  // GitHub Pages is static; use the local account store there.
+  if(API_BASE) try {
     const res = await fetch(API_BASE+'/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password:pass})});
     const data = await res.json();
     if(res.ok && data.token) {
@@ -797,8 +796,8 @@ async function doRegister() {
   const passCheck=validatePass(pass);
   if(!passCheck.ok){showErr('registerError','❌ '+passCheck.msg);return;}
 
-  // 1) Пробуем настоящий бэкенд
-  try {
+  // GitHub Pages is static; use the local account store there.
+  if(API_BASE) try {
     const res = await fetch(API_BASE+'/register', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,email,password:pass})});
     const data = await res.json();
     if(res.ok && data.token) {
