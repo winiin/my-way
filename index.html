@@ -46,7 +46,7 @@
     </div>
 
     <!-- ── LOGIN ── -->
-    <div id="loginForm" class="auth-form">
+    <form id="loginForm" class="auth-form" novalidate>
       <div class="fld">
         <i class="fas fa-envelope fi"></i>
         <input type="email" id="loginEmail" placeholder="Email" autocomplete="email"/>
@@ -59,17 +59,17 @@
       <div style="text-align:right;margin:-4px 0 12px;">
         <a href="#" id="forgotPassLink" style="font-size:11.5px;color:var(--acc2);text-decoration:none;font-weight:600;">Забыли пароль?</a>
       </div>
-      <button class="btn btn-primary wf" id="loginBtn">
+      <button type="submit" class="btn btn-primary wf" id="loginBtn">
         <i class="fas fa-sign-in-alt"></i> <span id="loginBtnTxt">Войти</span>
       </button>
 
       <div class="auth-hint" id="authDemo">Демо: demo@myway.kz / Demo@123!</div>
       <div id="loginError" class="auth-error hidden"></div>
       <div id="loginSuccess" class="auth-success hidden"></div>
-    </div>
+    </form>
 
     <!-- ── REGISTER ── -->
-    <div id="registerForm" class="auth-form hidden">
+    <form id="registerForm" class="auth-form hidden" novalidate>
       <div class="fld">
         <i class="fas fa-user fi"></i>
         <input type="text" id="regName" placeholder="Ваше имя" autocomplete="name"/>
@@ -90,14 +90,12 @@
         <span id="pr-num" class="pr">• 1 цифра</span>
         <span id="pr-spec" class="pr">• 1 спецсимвол (!@#$...)</span>
       </div>
-      <button class="btn btn-primary wf" id="registerBtn">
+      <button type="submit" class="btn btn-primary wf" id="registerBtn">
         <i class="fas fa-user-plus"></i> <span id="registerBtnTxt">Создать аккаунт</span>
       </button>
       <div id="registerError" class="auth-error hidden"></div>
       <div id="registerSuccess" class="auth-success hidden"></div>
-    </div>
-
-    </div>
+    </form>
 
   </div>
 </div>
@@ -146,7 +144,7 @@
   </button>
 </div>
 
-<script src="app.js?v=20261117-1"></script>
+<script src="app.js?v=20261118-1"></script>
 <script src="habits-tasks.js?v=20261116-3"></script>
 <script src="rewards-shop.js?v=20261116-3"></script>
 <script src="translations.js?v=20261116-1"></script>
